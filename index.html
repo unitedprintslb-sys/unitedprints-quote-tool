@@ -118,6 +118,30 @@ src="https://www.facebook.com/tr?id=1604596231170365&ev=PageView&noscript=1"
   .style-name{ font-size:13px; font-weight:700; color:var(--ink-900); }
   .style-desc{ font-size:11.5px; color:var(--ink-600); line-height:1.4; }
 
+
+  .gallery{ margin-top:14px; }
+  .gallery-strip{
+    display:flex; gap:10px; overflow-x:auto; scroll-snap-type:x mandatory;
+    -webkit-overflow-scrolling:touch; padding-bottom:6px;
+  }
+  .gallery-strip::-webkit-scrollbar{ height:4px; }
+  .gallery-strip::-webkit-scrollbar-thumb{ background:var(--line); border-radius:4px; }
+  .gallery-item{
+    flex:0 0 auto; scroll-snap-align:start; border:1px solid var(--line); border-radius:12px;
+    overflow:hidden; padding:0; background:var(--surface-2); cursor:zoom-in; display:block;
+  }
+  .gallery-item img{ display:block; height:190px; width:auto; max-width:78vw; }
+  .gallery-cap{ font-size:12px; color:var(--ink-400); margin-top:6px; line-height:1.45; }
+  .lightbox{
+    position:fixed; inset:0; background:rgba(20,20,24,.88); z-index:50; display:flex;
+    align-items:center; justify-content:center; padding:16px; cursor:zoom-out;
+  }
+  .lightbox[hidden]{ display:none; }
+  .lightbox img{ max-width:100%; max-height:88vh; border-radius:10px; background:#fff; }
+  .lightbox .lb-x{
+    position:absolute; top:10px; right:12px; width:44px; height:44px; border:0; border-radius:99px;
+    background:rgba(255,255,255,.18); color:#fff; font-size:26px; line-height:1; cursor:pointer;
+  }
   .price-card{
     background:var(--good-bg); border:1px solid color-mix(in srgb, var(--good) 35%, transparent);
     border-radius:14px; padding:22px 20px; text-align:center;
@@ -193,8 +217,11 @@ src="https://www.facebook.com/tr?id=1604596231170365&ev=PageView&noscript=1"
           <span class="style-desc">Paper bag with side gussets.</span>
         </label>
       </div>
+      <div class="gallery" id="styleGallery" hidden></div>
     </div>
   </div>
+
+  <div class="lightbox" id="lightbox" hidden role="dialog" aria-label="Photo"><button type="button" class="lb-x" aria-label="Close">&times;</button><img id="lbImg" alt=""></div>
 
   <div class="card">
     <h2>Paper type</h2>
@@ -600,6 +627,38 @@ src="https://www.facebook.com/tr?id=1604596231170365&ev=PageView&noscript=1"
     node.addEventListener("input", calculate);
     node.addEventListener("change", calculate);
   });
+
+
+  // ---- Real photos of finished work, shown under the style cards for the selected style ----
+  var STYLE_PHOTOS = {"fliptop": [{"f": "photos/fliptop-1.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 1"}, {"f": "photos/fliptop-2.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 2"}, {"f": "photos/fliptop-3.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 3"}, {"f": "photos/fliptop-4.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 4"}, {"f": "photos/fliptop-5.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 5"}, {"f": "photos/fliptop-6.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 6"}, {"f": "photos/fliptop-7.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 7"}, {"f": "photos/fliptop-8.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 8"}, {"f": "photos/fliptop-9.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 9"}, {"f": "photos/fliptop-10.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 10"}, {"f": "photos/fliptop-11.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 11"}, {"f": "photos/fliptop-12.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 12"}, {"f": "photos/fliptop-13.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 13"}, {"f": "photos/fliptop-14.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 14"}, {"f": "photos/fliptop-15.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 15"}, {"f": "photos/fliptop-16.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 16"}, {"f": "photos/fliptop-17.jpg", "w": 675, "h": 900, "alt": "Flip-top box example 17"}, {"f": "photos/fliptop-18.jpg", "w": 720, "h": 900, "alt": "Flip-top box example 18"}], "baseTop": [{"f": "photos/basetop-1.jpg", "w": 900, "h": 585, "alt": "Base & top box example 1"}, {"f": "photos/basetop-2.jpg", "w": 728, "h": 900, "alt": "Base & top box example 2"}], "slide": [{"f": "photos/slide-1.jpg", "w": 900, "h": 600, "alt": "Slide box example 1"}, {"f": "photos/slide-2.jpg", "w": 632, "h": 900, "alt": "Slide box example 2"}, {"f": "photos/slide-3.jpg", "w": 720, "h": 900, "alt": "Slide box example 3"}, {"f": "photos/slide-4.jpg", "w": 720, "h": 900, "alt": "Slide box example 4"}], "serum": [{"f": "photos/serum-1.jpg", "w": 591, "h": 721, "alt": "Serum / cream / perfume box example 1"}, {"f": "photos/serum-2.jpg", "w": 539, "h": 900, "alt": "Serum / cream / perfume box example 2"}, {"f": "photos/serum-3.jpg", "w": 535, "h": 900, "alt": "Serum / cream / perfume box example 3"}, {"f": "photos/serum-4.jpg", "w": 591, "h": 868, "alt": "Serum / cream / perfume box example 4"}, {"f": "photos/serum-5.jpg", "w": 766, "h": 900, "alt": "Serum / cream / perfume box example 5"}, {"f": "photos/serum-6.jpg", "w": 894, "h": 900, "alt": "Serum / cream / perfume box example 6"}, {"f": "photos/serum-7.jpg", "w": 665, "h": 900, "alt": "Serum / cream / perfume box example 7"}, {"f": "photos/serum-8.jpg", "w": 791, "h": 635, "alt": "Serum / cream / perfume box example 8"}, {"f": "photos/serum-9.jpg", "w": 591, "h": 687, "alt": "Serum / cream / perfume box example 9"}, {"f": "photos/serum-10.jpg", "w": 675, "h": 900, "alt": "Serum / cream / perfume box example 10"}, {"f": "photos/serum-11.jpg", "w": 675, "h": 900, "alt": "Serum / cream / perfume box example 11"}, {"f": "photos/serum-12.jpg", "w": 675, "h": 900, "alt": "Serum / cream / perfume box example 12"}], "bag": [{"f": "photos/bag-1.jpg", "w": 650, "h": 606, "alt": "Paper bag example 1"}, {"f": "photos/bag-2.jpg", "w": 675, "h": 900, "alt": "Paper bag example 2"}, {"f": "photos/bag-3.jpg", "w": 772, "h": 900, "alt": "Paper bag example 3"}, {"f": "photos/bag-4.jpg", "w": 751, "h": 900, "alt": "Paper bag example 4"}, {"f": "photos/bag-5.jpg", "w": 675, "h": 900, "alt": "Paper bag example 5"}, {"f": "photos/bag-6.jpg", "w": 675, "h": 900, "alt": "Paper bag example 6"}]};
+  var STYLE_PHOTO_NAMES = {"fliptop": "flip-top boxes", "baseTop": "base & top boxes", "slide": "slide boxes", "serum": "serum / cream / perfume boxes", "bag": "bags"};
+  function renderGallery(){
+    var box = document.getElementById("styleGallery");
+    if(!box) return;
+    var style = getStyle();
+    var list = STYLE_PHOTOS[style] || [];
+    if(!list.length){ box.hidden = true; box.innerHTML = ""; return; }
+    var html = '<div class="gallery-strip">';
+    list.forEach(function(p, i){
+      html += '<button type="button" class="gallery-item" data-src="'+p.f+'" data-alt="'+p.alt.replace(/"/g,'&quot;')+'">' +
+        '<img src="'+p.f+'" width="'+p.w+'" height="'+p.h+'" alt="'+p.alt.replace(/"/g,'&quot;')+'"' + (i > 1 ? ' loading="lazy"' : '') + ' decoding="async"></button>';
+    });
+    html += '</div><div class="gallery-cap">Examples of finished ' + STYLE_PHOTO_NAMES[style] + ' we\'ve made. Sizes, colors and finishes vary.</div>';
+    box.innerHTML = html;
+    box.hidden = false;
+  }
+  (function(){
+    var lb = document.getElementById("lightbox"), lbImg = document.getElementById("lbImg");
+    if(!lb) return;
+    document.addEventListener("click", function(e){
+      var it = e.target.closest && e.target.closest(".gallery-item");
+      if(it){ lbImg.src = it.getAttribute("data-src"); lbImg.alt = it.getAttribute("data-alt") || ""; lb.hidden = false; return; }
+      if(!lb.hidden && e.target.closest && e.target.closest("#lightbox")){ lb.hidden = true; lbImg.src = ""; }
+    });
+    document.addEventListener("keydown", function(e){ if(e.key === "Escape" && !lb.hidden){ lb.hidden = true; lbImg.src = ""; } });
+  })();
+  document.querySelectorAll('input[name="boxStyle"]').forEach(function(r){ r.addEventListener("change", renderGallery); });
+  renderGallery();
 
   calculate();
 })();
