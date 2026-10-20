@@ -59,6 +59,8 @@ textarea{min-height:84px;resize:vertical}
 .sw i{display:block;aspect-ratio:1;border-radius:50%;border:2px solid #fff;box-shadow:0 0 0 1px var(--line);cursor:pointer}
 .sw input:checked+i{box-shadow:0 0 0 3px var(--accent)}
 .sw input:focus-visible+i{box-shadow:0 0 0 3px var(--ink)}
+.cp{display:flex;align-items:center;gap:10px;margin-top:10px;font-size:13px;color:var(--ink2)}
+.cp input[type=color]{width:46px;height:34px;padding:0;border:1px solid var(--line);border-radius:8px;background:#fff;cursor:pointer}
 .picked{font-size:13px;color:var(--ink2);margin-top:8px;min-height:18px}
 .file{border:1.5px dashed var(--line);border-radius:12px;padding:12px;background:#fbfdff}
 .file input{width:100%;font:inherit;font-size:13.5px}
@@ -141,17 +143,20 @@ textarea{min-height:84px;resize:vertical}
 
 <div class="card">
 <h2>3. Colors</h2>
-<p class="hint">No brand colors yet? Pick the main color you want on the box. Already have exact brand colors? Type them below.</p>
+<p class="hint">No brand colors yet? Pick a swatch, or choose any color you like. Screen colors are only a guide: we match them to a print color (Pantone or CMYK) before printing, and the printed color can differ slightly from your screen. Already have exact print colors? Type them below.</p>
 <label class="l">Main color</label>
 <div class="sw" id="sw1"></div>
+<label class="cp">Or pick any color: <input type="color" id="cp1" value="#ffffff" aria-label="Pick any main color"></label>
 <div class="picked" id="p1"></div>
 <label class="l">Second color <small>(optional)</small></label>
 <div class="sw" id="sw2"></div>
+<label class="cp">Or pick any color: <input type="color" id="cp2" value="#ffffff" aria-label="Pick any second color"></label>
 <div class="picked" id="p2"></div>
 <input type="hidden" name="main_color" id="main_color">
 <input type="hidden" name="second_color" id="second_color">
-<label class="l" for="bc">My exact brand colors <small>(HEX codes or names, if you have them)</small></label>
-<input type="text" id="bc" name="brand_colors" placeholder="e.g. #4B2E1E and #C9A24B">
+<label class="l" for="bc">My exact print colors <small>(Pantone with C or U, or CMYK, if you have them)</small></label>
+<input type="text" id="bc" name="brand_colors" placeholder="e.g. Pantone 7533 C, or C60 M70 Y80 K80">
+<p class="fl">C = coated (for laminated paper), U = uncoated (for kraft). Not sure? Leave it empty and we'll help.</p>
 </div>
 
 <div class="card">
@@ -205,11 +210,18 @@ var WA="96171817100", MIN=300;
 var COLORS=[["Black","#1A1A1A"],["White","#FFFFFF"],["Cream","#F3E9D2"],["Gold","#C9A24B"],["Chocolate brown","#4B2E1E"],["Kraft brown","#B08D57"],["Red","#C62828"],["Burgundy","#6D1F2F"],["Pink","#F2A7B8"],["Orange","#F28C28"],["Yellow","#F5C518"],["Pistachio green","#93A66B"],["Green","#2E7D4F"],["Teal","#1F8A8A"],["Sky blue","#2AA9DF"],["Navy","#1B2A49"],["Purple","#6A4C93"],["Silver grey","#9AA0A6"]];
 function $(id){return document.getElementById(id)}
 function buildSw(boxId,name,pickId,hid){
-  var h="";COLORS.forEach(function(c,i){h+='<label title="'+c[0]+'"><input type="radio" name="'+name+'" value="'+c[0]+' '+c[1]+'" aria-label="'+c[0]+'"><i style="background:'+c[1]+'"></i></label>'});
+  var h="";COLORS.forEach(function(c,i){h+='<label title="'+c[0]+'"><input type="radio" name="'+name+'" value="'+c[0]+'" aria-label="'+c[0]+'"><i style="background:'+c[1]+'"></i></label>'});
   $(boxId).innerHTML=h;
   $(boxId).addEventListener("change",function(e){$(pickId).textContent="Selected: "+e.target.value;$(hid).value=e.target.value});
 }
 buildSw("sw1","m1","p1","main_color");buildSw("sw2","m2","p2","second_color");
+function cmyk(hex){var r=parseInt(hex.substr(1,2),16)/255,g=parseInt(hex.substr(3,2),16)/255,b=parseInt(hex.substr(5,2),16)/255,k=1-Math.max(r,g,b);
+ if(k>=1)return"C0 M0 Y0 K100";var c=(1-r-k)/(1-k),m=(1-g-k)/(1-k),y=(1-b-k)/(1-k);var p=function(x){return Math.round(x*100)};return"C"+p(c)+" M"+p(m)+" Y"+p(y)+" K"+p(k)}
+function wirePicker(cpId,name,pickId,hid){$(cpId).addEventListener("input",function(){var h=this.value.toUpperCase();
+ document.querySelectorAll('input[name="'+name+'"]').forEach(function(r){r.checked=false});
+ var v="Custom color, about "+cmyk(h)+" (screen "+h+")";$(hid).value=v;$(pickId).textContent="Selected: your custom color (we match it to a print color)"})}
+wirePicker("cp1","m1","p1","main_color");wirePicker("cp2","m2","p2","second_color");
+
 // reference + prefill
 $("ref").value="DR-"+new Date().toISOString().slice(2,10).replace(/-/g,"")+"-"+Math.random().toString(36).slice(2,6).toUpperCase();
 (function(){var P=new URLSearchParams(location.search),st=P.get("style"),sz=P.get("size"),q=P.get("qty"),us=P.get("utm_source");
@@ -240,7 +252,7 @@ $("f").addEventListener("submit",function(ev){
   if(!q||q<MIN)return fail("Please enter a quantity of "+MIN+" or more.");
   if(!$("unsure").checked&&!$("size").value.trim())return fail("Please enter the size, or tick \"I'm not sure\".");
   if(!$("brand").value.trim())return fail("Please enter your brand name.");
-  if(!$("main_color").value&&!$("bc").value.trim())return fail("Please pick a main color, or type your brand colors.");
+  if(!$("main_color").value&&!$("bc").value.trim())return fail("Please pick a main color, or type your print colors.");
   if(!$("nologo").checked&&!$("logo").files.length)return fail("Please attach your logo, or tick \"I don't have a logo yet\".");
   if(!$("cn").value.trim()||$("wa").value.replace(/\D/g,"").length<7)return fail("Please enter your name and a valid WhatsApp number.");
   if(!fileCheck())return fail("Please fix the file size first.");
