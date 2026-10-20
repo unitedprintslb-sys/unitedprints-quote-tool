@@ -157,6 +157,8 @@ gtag('js',new Date());gtag('config','G-30V3S8MDEW');
   .price-card .per{ font-size:13px; color:var(--ink-600); margin-top:6px; }
   .price-card .note{ font-size:12px; color:var(--ink-600); margin-top:12px; line-height:1.5; }
 
+  .design-cta{ margin:14px 0 4px; text-align:center; font-size:13.5px; color:var(--ink-600); }
+  .design-cta a{ color:var(--accent); font-weight:700; text-decoration:none; white-space:nowrap; }
   .wa-btn{
     display:flex; align-items:center; justify-content:center; gap:8px;
     width:100%; margin-top:16px; padding:14px 16px; border-radius:10px; border:none;
@@ -305,6 +307,7 @@ gtag('js',new Date());gtag('config','G-30V3S8MDEW');
   </div>
 
   <div id="resultArea"></div>
+  <div class="design-cta"><span>Need artwork for your box or bag?</span> <a id="designLink" href="design.html">Free design in 24h for orders of 300+ &rarr;</a></div>
 
   <footer>
     Estimate only — your final price is confirmed by our team. Sizes shown are what the box looks like closed; unusual sizes or new artwork may need a small adjustment.
@@ -666,6 +669,15 @@ gtag('js',new Date());gtag('config','G-30V3S8MDEW');
   document.querySelectorAll('input[name="boxStyle"]').forEach(function(r){ r.addEventListener("change", renderGallery); });
   renderGallery();
 
+    // Free-design link: carries the chosen style, size and quantity to design.html so the customer doesn't retype them.
+  function updateDesignLink(){
+    var a = document.getElementById("designLink"); if(!a) return;
+    var q = "?style=" + encodeURIComponent(getStyle()) + "&size=" + encodeURIComponent(el("closedL").value + " x " + el("closedW").value + " x " + el("closedH").value) + "&qty=" + encodeURIComponent(el("qty").value) + "&utm_source=quote_tool";
+    a.href = "design.html" + q;
+  }
+  document.addEventListener("input", updateDesignLink);
+  document.addEventListener("change", updateDesignLink);
+  updateDesignLink();
   calculate();
 })();
 </script>
